@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Bloco de notas moderno com modo escuro e claro">
+    <meta name="theme-color" content="#121212">
+    <meta name="color-scheme" content="dark light">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Blocos de Notas</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75' fill='%23e0e0e0'>📝</text></svg>">
+</head>
+<body class="dark">
+    <header class="main-header">
+        <div class="header-content">
+            <h1 class="app-title">📝 Blocos de Notas</h1>
+            <button id="theme-toggle" class="theme-btn" aria-label="Alternar para modo claro" data-state="dark">
+                <svg class="theme-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="editor-section">
+            <div class="editor-wrapper">
+                <div id="editor" class="editor" contenteditable="true" spellcheck="true" role="textbox" aria-label="Área de edição de notas" aria-multiline="true"></div>
+                <span class="char-count" id="char-count">0 caracteres</span>
+            </div>
+        </section>
+
+        <div class="action-buttons">
+            <button id="save-btn" class="btn btn-primary" title="Salvar nota (Ctrl+S)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                    <polyline points="7 5 7 3 17 3 17 5"></polyline>
+                </svg>
+                <span>Salvar</span>
+            </button>
+            <button id="copy-btn" class="btn btn-secondary" title="Copiar para área de transferência (Ctrl+C)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                </svg>
+                <span>Copiar</span>
+            </button>
+            <button id="clear-btn" class="btn btn-tertiary" title="Limpar tudo (irrevogável)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                <span>Limpar</span>
+            </button>
+        </div>
+    </main>
+
+    <div id="notification" class="notification" role="status" aria-live="polite"></div>
+    <div id="save-indicator" class="save-indicator" aria-label="Status de salvamento"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
