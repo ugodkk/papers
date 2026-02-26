@@ -1,0 +1,74 @@
+/* core layout */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  background-color: var(--bg);
+  color: var(--fg);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: var(--header-bg);
+}
+
+#editor {
+  min-height: 60vh;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  margin: 1rem;
+  border-radius: 4px;
+  background: var(--editor-bg);
+  outline: none;
+}
+#editor:empty:before {
+  content: attr(placeholder);
+  color: var(--placeholder);
+}
+
+.buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: var(--button-bg);
+  color: var(--button-fg);
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+/* themes */
+:root {
+  --bg: #121212;
+  --fg: #e0e0e0;
+  --header-bg: #1e1e1e;
+  --editor-bg: #1a1a1a;
+  --border: #333;
+  --placeholder: #555;
+  --button-bg: #2a2a2a;
+  --button-fg: #fff;
+}
+
+body.light {
+  --bg: #fafafa;
+  --fg: #202020;
+  --header-bg: #fff;
+  --editor-bg: #fff;
+  --border: #ccc;
+  --placeholder: #999;
+  --button-bg: #e0e0e0;
+  --button-fg: #000;
+}
