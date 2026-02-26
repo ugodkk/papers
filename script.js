@@ -1,235 +1,305 @@
-// Elements
-const editor = document.getElementById('editor');
-const saveBtn = document.getElementById('save-btn');
-const copyBtn = document.getElementById('copy-btn');
-const clearBtn = document.getElementById('clear-btn');
-const themeToggle = document.getElementById('theme-toggle');
-const notification = document.getElementById('notification');
-const saveIndicator = document.getElementById('save-indicator');
-const charCount = document.getElementById('char-count');
-
-// State
-let isSaving = false;
-let autoSaveTimeout;
-const AUTO_SAVE_DELAY = 1000; // 1 second
-const STORAGE_KEY = 'note_content';
-const THEME_KEY = 'app_theme';
+/**
+ * Notas Pro - Main Application Script
+ * Orquestra todos os componentes e funcionalidades
+ */
 
 // ============================================================================
-// INITIALIZATION
+// INICIALIZAÇÃO GLOBAL
 // ============================================================================
 
-document.addEventListener('DOMContentLoaded', () => {
-  loadContent();
-  initializeTheme();
-  updateCharCount();
-  
-  // Focus editor on load
-  if (!getStoredContent()) {
-    editor.focus();
+let editor, sidebar, modals, settings, colorPicker, onboarding;
+
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    // Inicializar temas
+    UIComponents.loadTheme();
+
+    // Inicializar banco de dados
+    await db.init();
+    console.log('✓ IndexedDB inicializado');
+
+    // Inicializar componentes
+    initializeSystems();
+    setupEventListeners();
+    loadInitialNote();
+
+    // Mostrar onboarding se necessário
+    const isOnboarded = localStorage.getItem('onboarded') === 'true';
+    if (!isOnboarded) {
+      UIComponents.disableBodyScroll();
+    }
+
+  } catch (error) {
+    console.error('Erro na inicialização:', error);
+    UIComponents.showNotification('✗ Erro ao inicializar aplicação', 'error');
   }
 });
 
 // ============================================================================
-// THEME MANAGEMENT
+// INICIALIZAÇÃO DE SISTEMAS
 // ============================================================================
 
-function initializeTheme() {
-  const savedTheme = localStorage.getItem(THEME_KEY) || 'dark';
-  applyTheme(savedTheme);
-}
+function initializeSystems() {
+  // Editor
+  editor = new EditorManager();
 
-function applyTheme(theme) {
-  const isDark = theme === 'dark';
-  document.body.classList.toggle('light', !isDark);
-  themeToggle.setAttribute('data-state', theme);
-  themeToggle.setAttribute('aria-label', 
-    isDark ? 'Alternar para modo claro' : 'Alternar para modo escuro'
-  );
-  localStorage.setItem(THEME_KEY, theme);
-}
+  // Sidebar
+  sidebar = new SidebarManager();
+  sidebar.init();
 
-themeToggle.addEventListener('click', () => {
-  const currentTheme = localStorage.getItem(THEME_KEY) || 'dark';
-  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-  applyTheme(newTheme);
-  showNotification('Tema alterado', 'success');
-});
+  // Modais
+  modals = new ModalManager();
+  modals.init();
 
-// ============================================================================
-// CONTENT MANAGEMENT
-// ============================================================================
+  // Configurações
+  settings = new SettingsManager();
+  settings.init();
 
-function getStoredContent() {
-  return localStorage.getItem(STORAGE_KEY) || '';
-}
+  // Color Picker
+  colorPicker = new ColorPickerManager();
+  colorPicker.init();
 
-function loadContent() {
-  const stored = getStoredContent();
-  if (stored) {
-    editor.textContent = stored; // Use textContent to prevent XSS
-  }
-}
-
-function saveContent() {
-  const content = editor.textContent;
-  localStorage.setItem(STORAGE_KEY, content);
-}
-
-function updateCharCount() {
-  const count = editor.textContent.trim().length;
-  charCount.textContent = `${count} caracteres`;
-}
-
-// ============================================================================
-// AUTO-SAVE WITH DEBOUNCE
-// ============================================================================
-
-function debouncedAutoSave() {
-  clearTimeout(autoSaveTimeout);
-  setSavingState(true);
-  
-  autoSaveTimeout = setTimeout(() => {
-    saveContent();
-    setSavingState(false);
-  }, AUTO_SAVE_DELAY);
-}
-
-function setSavingState(saving) {
-  isSaving = saving;
-  saveIndicator.classList.toggle('saving', saving);
-  saveIndicator.classList.remove('saved');
-  
-  if (!saving) {
-    setTimeout(() => {
-      saveIndicator.classList.add('saved');
-      setTimeout(() => {
-        saveIndicator.classList.remove('saved');
-      }, 1500);
-    }, 100);
-  }
+  // Onboarding
+  onboarding = new OnboardingManager();
+  onboarding.init();
 }
 
 // ============================================================================
 // EVENT LISTENERS
 // ============================================================================
 
-// Editor input
-editor.addEventListener('input', () => {
-  updateCharCount();
-  debouncedAutoSave();
-});
+function setupEventListeners() {
+  const elements = {
+    themeToggle: document.getElementById('theme-toggle'),
+    searchBtn: document.getElementById('search-btn'),
+    newNoteBtn: document.getElementById('new-note-btn'),
+    saveBtn: document.getElementById('save-btn'),
+    copyBtn: document.getElementById('copy-btn'),
+    exportBtn: document.getElementById('export-btn'),
+    deleteBtn: document.getElementById('delete-btn'),
+    skipOnboarding: document.getElementById('skip-onboarding'),
+    editorInput: document.getElementById('editor'),
+    noteTitleInput: document.getElementById('note-title')
+  };
 
-// Save button
-saveBtn.addEventListener('click', () => {
-  saveContent();
-  saveBtn.classList.add('loading');
-  setTimeout(() => {
-    saveBtn.classList.remove('loading');
-    showNotification('✓ Nota salva com sucesso', 'success');
-    setSavingState(false);
-  }, 300);
-});
+  // Tema
+  elements.themeToggle.addEventListener('click', () => {
+    const theme = UIComponents.toggleTheme();
+    UIComponents.showNotification(`Modo ${theme === 'dark' ? 'escuro' : 'claro'} ativado`);
+  });
 
-// Copy button
-copyBtn.addEventListener('click', async () => {
-  try {
-    const text = editor.textContent;
-    
-    if (!text.trim()) {
-      showNotification('Nada para copiar', 'warning');
-      return;
+  // Busca
+  elements.searchBtn.addEventListener('click', toggleSearchBar);
+
+  // Nova nota
+  elements.newNoteBtn.addEventListener('click', createNewNote);
+
+  // Ações do editor
+  elements.saveBtn.addEventListener('click', () => editor.saveNote());
+  elements.copyBtn.addEventListener('click', () => editor.copy());
+  elements.exportBtn.addEventListener('click', () => editor.export());
+  elements.deleteBtn.addEventListener('click', () => editor.clear());
+
+  // Onboarding
+  elements.skipOnboarding.addEventListener('click', () => {
+    onboarding.complete();
+  });
+
+  // Input do editor
+  elements.editorInput.addEventListener('input', () => {
+    editor.updateStats();
+    editor.autoSave();
+  });
+
+  elements.noteTitleInput.addEventListener('input', () => {
+    editor.autoSave();
+  });
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    // Ctrl/Cmd + S: Salvar
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      e.preventDefault();
+      editor.saveNote();
     }
-    
-    await navigator.clipboard.writeText(text);
-    showNotification('✓ Copiado para a área de transferência', 'success');
-    
-    // Visual feedback
-    copyBtn.classList.add('loading');
-    setTimeout(() => {
-      copyBtn.classList.remove('loading');
-    }, 300);
-  } catch (err) {
-    console.error('Falha ao copiar:', err);
-    showNotification('✗ Falha ao copiar', 'error');
-  }
-});
 
-// Clear button
-clearBtn.addEventListener('click', () => {
-  if (editor.textContent.trim() === '') {
-    showNotification('Não há nada para limpar', 'warning');
-    return;
-  }
-  
-  if (confirm('Tem certeza que deseja limpar tudo? Esta ação é irreversível.')) {
-    editor.textContent = '';
-    saveContent();
-    updateCharCount();
-    showNotification('✓ Conteúdo limpo', 'success');
-    editor.focus();
-  }
-});
+    // Ctrl/Cmd + N: Nova nota
+    if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+      e.preventDefault();
+      createNewNote();
+    }
 
-// ============================================================================
-// KEYBOARD SHORTCUTS
-// ============================================================================
+    // Ctrl/Cmd + K: Busca
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      toggleSearchBar();
+    }
 
-document.addEventListener('keydown', (e) => {
-  // Ctrl/Cmd + S: Save
-  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-    e.preventDefault();
-    saveBtn.click();
-  }
-  
-  // Ctrl/Cmd + Shift + C: Copy
-  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'c') {
-    e.preventDefault();
-    copyBtn.click();
-  }
-});
+    // Ctrl/Cmd + B: Bold
+    if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+      e.preventDefault();
+      editor.applyFormat('bold');
+    }
 
-// ============================================================================
-// NOTIFICATION SYSTEM
-// ============================================================================
+    // Ctrl/Cmd + I: Italic
+    if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
+      e.preventDefault();
+      editor.applyFormat('italic');
+    }
+  });
 
-/**
- * Shows a notification toast
- * @param {string} message - Message to display
- * @param {string} type - 'success', 'error', or 'warning'
- * @param {number} duration - Display duration in ms (default 3000)
- */
-function showNotification(message, type = 'success', duration = 3000) {
-  notification.textContent = message;
-  notification.className = 'notification show ' + type;
-  
-  setTimeout(() => {
-    notification.classList.remove('show');
-  }, duration);
+  // Toolbar
+  document.querySelectorAll('.toolbar-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const cmd = e.currentTarget.getAttribute('data-cmd');
+      if (cmd) {
+        editor.applyFormat(cmd);
+        e.currentTarget.classList.toggle('active');
+      }
+    });
+  });
+
+  // Fechar search ao clicar no X
+  document.querySelector('.search-bar .btn-icon')?.addEventListener('click', closeSearchBar);
+
+  // Busca ao digitar
+  document.getElementById('search-input')?.addEventListener('input', (e) => {
+    const query = e.target.value;
+    if (query.length > 0) {
+      searchNotes(query);
+    }
+  });
 }
 
 // ============================================================================
-// UTILITIES
+// FUNÇÕES DE EDITOR
 // ============================================================================
 
-// Prevent loss of data
-window.addEventListener('beforeunload', (e) => {
-  if (isSaving) {
-    e.preventDefault();
-    e.returnValue = '';
-    return '';
+/**
+ * Carrega a primeira nota ou cria uma nova
+ */
+async function loadInitialNote() {
+  try {
+    const notes = await db.getAllNotes();
+    if (notes.length > 0) {
+      editor.loadNote(notes[0]);
+    } else {
+      // Criar nota vazia padrão
+      const newNote = {
+        title: 'Minha Primeira Nota',
+        content: 'Comece a digitar aqui...',
+        tags: [],
+        starred: false
+      };
+      const id = await db.saveNote(newNote);
+      newNote.id = id;
+      editor.loadNote(newNote);
+    }
+  } catch (error) {
+    console.error('Erro ao carregar notas:', error);
+    UIComponents.showNotification('✗ Erro ao carregar notas', 'error');
+  }
+}
+
+/**
+ * Cria uma nova nota
+ */
+async function createNewNote() {
+  const newNote = {
+    title: `Nota ${new Date().toLocaleDateString('pt-BR')}`,
+    content: '',
+    tags: [],
+    starred: false
+  };
+  const id = await db.saveNote(newNote);
+  newNote.id = id;
+  editor.loadNote(newNote);
+  editor.updateStats();
+  UIComponents.showNotification('✓ Nova nota criada');
+  document.getElementById('note-title').focus();
+}
+
+// ============================================================================
+// FUNÇÕES DE BUSCA
+// ============================================================================
+
+function toggleSearchBar() {
+  const searchBar = document.querySelector('.search-bar');
+  searchBar.classList.toggle('hidden');
+  if (!searchBar.classList.contains('hidden')) {
+    document.getElementById('search-input').focus();
+  }
+}
+
+function closeSearchBar() {
+  document.querySelector('.search-bar').classList.add('hidden');
+}
+
+async function searchNotes(query) {
+  try {
+    const results = await db.searchNotes(query);
+    displaySearchResults(results);
+  } catch (error) {
+    console.error('Erro na busca:', error);
+  }
+}
+
+function displaySearchResults(results) {
+  // Implementar UI dos resultados de busca
+  if (results.length === 0) {
+    UIComponents.showNotification('Nenhuma nota encontrada', 'info', 2000);
+  } else {
+    console.log(`Encontradas ${results.length} notas`);
+  }
+}
+
+// ============================================================================
+// AUTO-SYNC COM OUTRAS ABAS
+// ============================================================================
+
+window.addEventListener('storage', (e) => {
+  if (e.key === 'theme') {
+    UIComponents.loadTheme();
   }
 });
 
-// Sync across tabs/windows
-window.addEventListener('storage', (e) => {
-  if (e.key === STORAGE_KEY && e.newValue !== editor.textContent) {
-    editor.textContent = e.newValue || '';
-    updateCharCount();
-    showNotification('ℹ️ Nota atualizada em outro aberto', 'warning', 2000);
-  }
-  
-  if (e.key === THEME_KEY && e.newValue) {
-    applyTheme(e.newValue);
+// ============================================================================
+// SERVICE WORKER (Cache & Offline)
+// ============================================================================
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(err => {
+    console.log('Service Worker não disponível:', err);
+  });
+}
+
+// ============================================================================
+// ANTES DE DESCARREGAR (SALVAR QUANDO DEIXAR A PÁG)
+// ============================================================================
+
+window.addEventListener('beforeunload', async (e) => {
+  if (document.getElementById('save-indicator').classList.contains('saving')) {
+    e.preventDefault();
+    e.returnValue = '';
   }
 });
+
+// ============================================================================
+// DETECTAR ONLINE/OFFLINE
+// ============================================================================
+
+window.addEventListener('online', () => {
+  UIComponents.showNotification('✓ Conexão restaurada', 'success', 2000);
+});
+
+window.addEventListener('offline', () => {
+  UIComponents.showNotification('⚠ Sem conexão (dados salvos localmente)', 'warning');
+});
+
+// ============================================================================
+// LOG DE INICIALIZAÇÃO
+// ============================================================================
+
+console.log('%c📝 Notas Pro v1.0', 'font-size: 20px; font-weight: bold; color: #3b82f6;');
+console.log('%cPlataforma de notas com 500k+ caracteres, IndexedDB, e recursos modernos', 'color: #a0a0a0;');
+console.log('%cDicas: Ctrl+S (Salvar), Ctrl+N (Nova), Ctrl+K (Buscar)', 'color: #10b981;');
