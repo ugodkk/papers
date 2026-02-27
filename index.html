@@ -3,15 +3,276 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Plataforma completa de notas com 500k+ caracteres, dark mode, colaboração">
+    <meta name="description" content="Editor de Notas com Jornal Público Integrado">
     <meta name="theme-color" content="#0f0f0f">
     <meta name="color-scheme" content="dark light">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Notas Pro - Plataforma de Notas</title>
+    <title>Notas Pro - Editor & Jornal</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital@0;1&family=Playfair+Display:wght@700;900&family=EB+Garamond:wght@400;600&display=swap" rel="stylesheet">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>📝</text></svg>">
+    <style>
+        .app-tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 2px solid var(--border);
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--fg-muted);
+            padding: 15px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            font-weight: 500;
+        }
+
+        .tab-btn:hover {
+            color: var(--fg);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Jornal Newspaper Style */
+        .newspaper-view {
+            background: linear-gradient(135deg, #D4AF37 0%, #B8A130 50%, #8B7E1A 100%);
+            min-height: 100vh;
+            padding: 30px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .newspaper-container {
+            background: linear-gradient(to bottom, #f5f1e8 0%, #f0ebe0 50%, #ebe5d9 100%);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+            max-width: 900px;
+            width: 100%;
+            padding: 50px 60px;
+            position: relative;
+            border: 8px solid #a68a4a;
+            overflow: hidden;
+            font-family: 'EB Garamond', Georgia, serif;
+            color: #2c1810;
+        }
+
+        .newspaper-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0, 0, 0, 0.03) 2px, rgba(0, 0, 0, 0.03) 4px),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.03) 2px, rgba(0, 0, 0, 0.03) 4px);
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        .newspaper-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .newspaper-header {
+            text-align: center;
+            border-bottom: 6px double #2c1810;
+            border-top: 3px solid #2c1810;
+            padding: 30px 0;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .newspaper-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5em;
+            font-weight: 900;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: #1a0f05;
+            text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 8px;
+            line-height: 1;
+        }
+
+        .newspaper-subtitle {
+            font-family: 'Crimson Text', serif;
+            font-size: 1.1em;
+            font-style: italic;
+            color: #5c3a1f;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .newspaper-date {
+            font-size: 0.9em;
+            color: #6b4423;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-top: 2px solid #2c1810;
+            border-bottom: 2px solid #2c1810;
+            padding: 8px 0;
+            font-weight: 600;
+        }
+
+        .newspaper-columns {
+            column-count: 2;
+            column-gap: 40px;
+            column-rule: 2px solid #a68a4a;
+            text-align: justify;
+            line-height: 1.8;
+        }
+
+        .note-article {
+            break-inside: avoid;
+            margin-bottom: 35px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #c4a97d;
+        }
+
+        .note-article:last-child {
+            border-bottom: none;
+        }
+
+        .article-headline {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #1a0f05;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+            line-height: 1.2;
+        }
+
+        .article-byline {
+            font-size: 0.85em;
+            color: #6b4423;
+            font-style: italic;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .article-content {
+            font-size: 0.95em;
+            color: #2c1810;
+            line-height: 1.9;
+            text-align: justify;
+        }
+
+        .article-content p {
+            margin-bottom: 12px;
+            text-indent: 2em;
+        }
+
+        .article-content p:first-child {
+            text-indent: 0;
+        }
+
+        .article-tags {
+            margin-top: 12px;
+            font-size: 0.8em;
+            color: #6b4423;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .tag-badge {
+            display: inline-block;
+            background: #a68a4a;
+            color: #f5f1e8;
+            padding: 4px 10px;
+            margin-right: 6px;
+            border-radius: 2px;
+            font-weight: 600;
+        }
+
+        .newspaper-footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 25px;
+            border-top: 6px double #2c1810;
+            font-size: 0.9em;
+            color: #6b4423;
+        }
+
+        .footer-decoration {
+            color: #a68a4a;
+            font-size: 1.3em;
+            margin: 12px 0;
+            letter-spacing: 3px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b4423;
+        }
+
+        .empty-state-text {
+            font-size: 1.2em;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .newspaper-container {
+                padding: 30px 20px;
+                border-width: 4px;
+            }
+
+            .newspaper-title {
+                font-size: 2em;
+                letter-spacing: 1px;
+            }
+
+            .newspaper-subtitle {
+                font-size: 0.95em;
+            }
+
+            .newspaper-columns {
+                column-count: 1;
+                column-gap: 0;
+                column-rule: none;
+            }
+
+            .article-headline {
+                font-size: 1.4em;
+            }
+
+            .article-content {
+                font-size: 0.9em;
+            }
+
+            .app-tabs {
+                padding: 0 10px;
+            }
+
+            .tab-btn {
+                padding: 12px 15px;
+                font-size: 0.95rem;
+            }
+        }
+    </style>
 </head>
 <body class="dark" data-onboarded="false">
     <!-- ONBOARDING OVERLAY -->
@@ -22,13 +283,13 @@
             <div class="onboarding-steps">
                 <div class="step active">Escreva suas notas</div>
                 <div class="step">Organize com tags</div>
-                <div class="step">Customize temas</div>
+                <div class="step">Visualize no jornal</div>
             </div>
             <button id="skip-onboarding" class="btn btn-primary">Começar</button>
         </div>
     </div>
 
-    <!-- TOP NAVIGATION (STICKY) -->
+    <!-- TOP NAVIGATION -->
     <header class="navbar">
         <div class="navbar-content">
             <button id="sidebar-toggle" class="btn-icon" aria-label="Abrir menu">
@@ -59,43 +320,21 @@
                 </button>
             </div>
         </div>
-        <!-- SEARCH BAR (HIDDEN) -->
-        <div id="search-bar" class="search-bar hidden">
-            <input type="text" id="search-input" placeholder="Buscar notas..." class="search-input">
-            <button class="btn-icon" aria-label="Fechar busca">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </button>
-        </div>
     </header>
 
     <div class="app-layout">
-        <!-- SIDEBAR (OFF-CANVAS) -->
+        <!-- SIDEBAR -->
         <aside id="sidebar" class="sidebar">
             <nav class="sidebar-nav">
                 <div class="nav-section">
                     <button class="nav-item active" data-page="notes">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71l-2.75 3.54-2.08-2.61-1.41 1.41L11 15.5l4.96-6.29-1.41-1.42z"/></svg>
-                        <span>Minhas Notas</span>
+                        <span>Editar</span>
                     </button>
-                    <button class="nav-item" data-page="starred">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27z"/></svg>
-                        <span>Favoritos</span>
+                    <button class="nav-item" data-page="newspaper">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 9h8v2h-8v-2zm0 4h8v1h-8v-1zm0-4h8v1h-8v-1z"/></svg>
+                        <span>📰 Jornal</span>
                     </button>
-                    <button class="nav-item" data-page="shared">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
-                        <span>Compartilhadas</span>
-                    </button>
-                </div>
-                <div class="nav-section">
-                    <h3 class="nav-label">Suas Tags</h3>
-                    <div id="tags-list" class="tags-list">
-                        <button class="tag-item">Pessoal</button>
-                        <button class="tag-item">Trabalho</button>
-                        <button class="tag-item">Ideias</button>
-                    </div>
                 </div>
             </nav>
             <div class="sidebar-footer">
@@ -103,9 +342,9 @@
             </div>
         </aside>
 
-        <!-- MAIN CONTENT AREA -->
+        <!-- MAIN CONTENT -->
         <main class="main-area">
-            <!-- EDITOR PAGE -->
+            <!-- EDITOR TAB -->
             <section id="notes-page" class="page active">
                 <div class="editor-container">
                     <div class="editor-header">
@@ -118,22 +357,12 @@
                     </div>
                     
                     <div class="editor-toolbar">
-                        <button class="toolbar-btn" title="Negrito (Ctrl+B)" data-cmd="bold">
-                            <strong>B</strong>
-                        </button>
-                        <button class="toolbar-btn" title="Itálico (Ctrl+I)" data-cmd="italic">
-                            <em>I</em>
-                        </button>
-                        <button class="toolbar-btn" title="Riscado" data-cmd="strikethrough">
-                            <s>S</s>
-                        </button>
+                        <button class="toolbar-btn" title="Negrito (Ctrl+B)" data-cmd="bold"><strong>B</strong></button>
+                        <button class="toolbar-btn" title="Itálico (Ctrl+I)" data-cmd="italic"><em>I</em></button>
+                        <button class="toolbar-btn" title="Riscado" data-cmd="strikethrough"><s>S</s></button>
                         <div class="toolbar-divider"></div>
                         <button class="toolbar-btn" title="Lista com Bullet" data-cmd="insertUnorderedList">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M4 10.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm0-6c-.83 0-1.5.67-1.5 1.5S3.17 7.5 4 7.5 5.5 6.83 5.5 6 4.83 4.5 4 4.5zm0 12c-.83 0-1.5.68-1.5 1.5s.67 1.5 1.5 1.5 1.5-.68 1.5-1.5-.67-1.5-1.5-1.5zM7 19h14v-2H7v2zm0-6h14v-2H7v2zm0-8v2h14V5H7z"/></svg>
-                        </button>
-                        <div class="toolbar-divider"></div>
-                        <button id="color-picker-btn" class="toolbar-btn" title="Cor do texto">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><path d="M12 9v6M9 12h6"></path></svg>
                         </button>
                     </div>
 
@@ -146,225 +375,44 @@
                             <button id="save-btn" class="btn btn-primary">Salvar</button>
                             <button id="copy-btn" class="btn btn-secondary">Copiar</button>
                             <button id="export-btn" class="btn btn-secondary">Exportar</button>
-                            <button id="share-newspaper-btn" class="btn btn-secondary">📰 Compartilhar</button>
+                            <button id="share-newspaper-btn" class="btn btn-secondary">📰 Publicar no Jornal</button>
                             <button id="delete-btn" class="btn btn-tertiary">Deletar</button>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- FAVORITES PAGE (SKELETON) -->
-            <section id="starred-page" class="page">
-                <div class="page-header">
-                    <h2>Favoritos</h2>
-                </div>
-                <div id="favorites-list" class="card-grid">
-                    <!-- Populated by JS -->
-                </div>
-                <div id="favorites-skeleton" class="card-grid">
-                    <div class="card-skeleton"></div>
-                    <div class="card-skeleton"></div>
-                    <div class="card-skeleton"></div>
-                </div>
-            </section>
+            <!-- JORNAL TAB -->
+            <section id="newspaper-page" class="page newspaper-view">
+                <div class="newspaper-container">
+                    <div class="newspaper-content">
+                        <!-- Cabeçalho -->
+                        <div class="newspaper-header">
+                            <div class="newspaper-title">Jornal de Notas</div>
+                            <div class="newspaper-subtitle">Publicadas e Compartilhadas</div>
+                            <div style="text-align: center; margin: 15px 0;">✦ ✦ ✦</div>
+                            <div class="newspaper-date" id="currentDate"></div>
+                        </div>
 
-            <!-- SHARED PAGE -->
-            <section id="shared-page" class="page">
-                <div class="page-header">
-                    <h2>Notas Compartilhadas</h2>
-                </div>
-                <div id="shared-list" class="card-grid">
-                    <!-- Populated by JS -->
+                        <!-- Colunas de Notas -->
+                        <div class="newspaper-columns" id="notesContainer">
+                            <div class="empty-state">
+                                <div style="font-size: 3em; margin-bottom: 10px;">📰</div>
+                                <div class="empty-state-text">Nenhuma nota publicada ainda</div>
+                                <p>Publique notas do editor para que apareçam aqui</p>
+                            </div>
+                        </div>
+
+                        <!-- Rodapé -->
+                        <div class="newspaper-footer">
+                            <div class="footer-decoration">✦ ✦ ✦</div>
+                            <p>Publicado por Notas Pro - Edição Pessoal</p>
+                            <p style="margin-top: 10px; font-size: 0.85em;"><em>Seu jornal pessoal de notas atualizado automaticamente</em></p>
+                        </div>
+                    </div>
                 </div>
             </section>
         </main>
-    </div>
-
-    <!-- MODALS -->
-    <!-- Color Picker Modal -->
-    <div id="color-picker-modal" class="modal hidden">
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Seletor de Cores</h3>
-                <button class="btn-icon modal-close">✕</button>
-            </div>
-            <div class="modal-body">
-                <input type="color" id="color-input" class="color-input" value="#0f0f0f">
-                <div class="color-presets">
-                    <button class="color-preset" style="background: #FF6B6B;"></button>
-                    <button class="color-preset" style="background: #4ECDC4;"></button>
-                    <button class="color-preset" style="background: #FFE66D;"></button>
-                    <button class="color-preset" style="background: #95E1D3;"></button>
-                    <button class="color-preset" style="background: #A8E6CF;"></button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Settings Modal -->
-    <div id="settings-modal" class="modal hidden">
-        <div class="modal-overlay"></div>
-        <div class="modal-content modal-lg">
-            <div class="modal-header">
-                <h3>Configurações</h3>
-                <button class="btn-icon modal-close">✕</button>
-            </div>
-            <div class="modal-body">
-                <div class="settings-tabs">
-                    <button class="tab-btn active" data-tab="general">Geral</button>
-                    <button class="tab-btn" data-tab="appearance">Aparência</button>
-                    <button class="tab-btn" data-tab="data">Dados</button>
-                </div>
-                <div class="tab-content active" id="general-tab">
-                    <label class="form-group">
-                        <span>Tamanho da fonte</span>
-                        <select id="font-size-select" class="form-control">
-                            <option value="14">Pequeno</option>
-                            <option value="16" selected>Normal</option>
-                            <option value="18">Grande</option>
-                            <option value="20">Muito Grande</option>
-                        </select>
-                    </label>
-                    <label class="form-group">
-                        <span>Auto-save (segundos)</span>
-                        <input type="number" id="autosave-interval" class="form-control" value="1" min="1">
-                    </label>
-                </div>
-                <div class="tab-content" id="appearance-tab">
-                    <label class="form-group">
-                        <span>Tema</span>
-                        <select id="theme-select" class="form-control">
-                            <option value="auto">Automático</option>
-                            <option value="dark">Escuro</option>
-                            <option value="light">Claro</option>
-                        </select>
-                    </label>
-                </div>
-                <div class="tab-content" id="data-tab">
-                    <p>Armazenamento: <strong id="storage-info">0 MB / 50 MB</strong></p>
-                    <button class="btn btn-tertiary" id="export-all-btn">Exportar Tudo</button>
-                    <button class="btn btn-tertiary" id="import-all-btn">Importar</button>
-                    <button class="btn btn-tertiary" id="clear-all-btn">Limpar Tudo</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- FOOTER -->
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h4>Notas Pro</h4>
-                <p>Plataforma completa de notas com suporte para 500k+ caracteres.</p>
-            </div>
-            <div class="footer-section">
-                <h4>Links</h4>
-                <ul>
-                    <li><a href="#about">Sobre</a></li>
-                    <li><a href="#privacy">Privacidade</a></li>
-                    <li><a href="#contact">Contato</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h4>Social</h4>
-                <div class="social-links">
-                    <a href="#" aria-label="Twitter">𝕏</a>
-                    <a href="#" aria-label="GitHub">⚙</a>
-                    <a href="#" aria-label="Discord">💬</a>
-                </div>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2026 Notas Pro. Todos os direitos reservados.</p>
-        </div>
-    </footer>
-
-    <!-- NOTIFICATIONS -->
-    <div id="notification" class="notification" role="status" aria-live="polite"></div>
-    <div id="save-indicator" class="save-indicator"></div>
-
-    <!-- SHARE MODAL -->
-    <div id="share-modal" class="modal hidden">
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>📰 Compartilhar como Jornal Público</h2>
-                <button class="btn-icon modal-close">✕</button>
-            </div>
-
-            <div class="modal-body">
-                <div class="share-info">
-                    <p><strong>Transforme suas notas em um jornal público!</strong></p>
-                    <p>Suas notas aparecerão em um elegante formato de jornal antigo, compartilhado com o mundo.</p>
-                </div>
-
-                <div class="share-preview">
-                    <h3>📰 Visualização do Jornal</h3>
-                    <div class="mini-newspaper">
-                        <div style="font-family: 'Playfair Display', serif; font-size: 1.5em; font-weight: 900; text-align: center; margin-bottom: 10px;">Jornal de Notas</div>
-                        <div style="text-align: center; font-style: italic; font-size: 0.9em; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 10px;">Compartilhadas com o Mundo</div>
-                        <div style="font-size: 1.1em; font-weight: 700; margin-bottom: 5px;" id="preview-title">Título da Sua Nota</div>
-                        <div style="font-size: 0.85em; color: #666; margin-bottom: 10px; font-style: italic;">Publicado em <span id="preview-date"></span></div>
-                        <div style="font-size: 0.95em; line-height: 1.6; color: #333;">
-                            <p id="preview-content">Seu conteúdo aparecerá aqui em um elegante desig de jornal antigo...</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="share-options">
-                    <h3>📋 Opções</h3>
-                    
-                    <div class="option">
-                        <input type="checkbox" id="include-tags" checked>
-                        <label for="include-tags">
-                            <strong>Incluir tags</strong>
-                            <span class="option-desc">As tags aparecerão como categorias no jornal</span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="link-section">
-                    <h3>🔗 Link Público</h3>
-                    <div class="link-copy">
-                        <input type="text" id="public-link" readonly placeholder="Link será atualizado ao compartilhar" style="
-                            flex: 1;
-                            padding: 10px 12px;
-                            background: #0f0f0f;
-                            border: 1px solid #3a3a3a;
-                            color: #e8e8e8;
-                            border-radius: 6px;
-                            font-family: monospace;
-                            font-size: 0.9rem;
-                        ">
-                        <button class="btn btn-secondary" id="copy-link-btn">Copiar Link</button>
-                    </div>
-                </div>
-
-                <div class="stats-section">
-                    <h3>📊 Status do Jornal</h3>
-                    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
-                        <div class="stat" style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; padding: 15px; border-radius: 6px; text-align: center;">
-                            <span class="stat-value" id="stat-notes" style="display: block; font-size: 1.75rem; font-weight: 700; color: #3b82f6; margin-bottom: 5px;">0</span>
-                            <span class="stat-label" style="display: block; font-size: 0.85rem; color: #a0a0a0;">Notas Compartilhadas</span>
-                        </div>
-                        <div class="stat" style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; padding: 15px; border-radius: 6px; text-align: center;">
-                            <span class="stat-value" id="stat-chars" style="display: block; font-size: 1.75rem; font-weight: 700; color: #3b82f6; margin-bottom: 5px;">0</span>
-                            <span class="stat-label" style="display: block; font-size: 0.85rem; color: #a0a0a0;">Caracteres</span>
-                        </div>
-                        <div class="stat" style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; padding: 15px; border-radius: 6px; text-align: center;">
-                            <span class="stat-value" id="stat-tags" style="display: block; font-size: 1.75rem; font-weight: 700; color: #3b82f6; margin-bottom: 5px;">0</span>
-                            <span class="stat-label" style="display: block; font-size: 0.85rem; color: #a0a0a0;">Categorias</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="modal-footer">
-                <button class="btn btn-secondary modal-close">Cancelar</button>
-                <button class="btn btn-primary" id="confirm-share">Compartilhar Agora</button>
-            </div>
-        </div>
     </div>
 
     <!-- SCRIPTS -->
@@ -373,5 +421,86 @@
     <script src="components.js"></script>
     <script src="newspaper.js"></script>
     <script src="script.js"></script>
+    <script>
+        // Alternar entre abas
+        document.querySelectorAll('.nav-item').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const page = this.getAttribute('data-page');
+                
+                // Remover ativa de todos
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+                
+                // Adicionar ativa ao selecionado
+                this.classList.add('active');
+                document.getElementById(`${page}-page`).classList.add('active');
+
+                // Atualizar jornal quando acessar
+                if (page === 'newspaper') {
+                    updateNewspaperView();
+                }
+            });
+        });
+
+        // Atualizar visualização do jornal
+        function updateNewspaperView() {
+            const notes = JSON.parse(localStorage.getItem('shared_notes') || '[]');
+            const container = document.getElementById('notesContainer');
+
+            if (notes.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 3em; margin-bottom: 10px;">📰</div>
+                        <div class="empty-state-text">Nenhuma nota publicada ainda</div>
+                        <p>Publique notas do editor para que apareçam aqui</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = '';
+            notes.forEach(note => {
+                const article = document.createElement('div');
+                article.className = 'note-article';
+                
+                const content = note.content || note.body || '';
+                const lines = content.split('\n').filter(l => l.trim());
+                const headline = lines[0]?.substring(0, 80) + (lines[0]?.length > 80 ? '...' : '');
+                const body = lines.slice(1).join('\n').substring(0, 500) + (content.length > 500 ? '...' : '');
+
+                let tagsHtml = '';
+                if (note.tags && note.tags.length > 0) {
+                    tagsHtml = `<div class="article-tags">${note.tags.map(tag => `<span class="tag-badge">${tag}</span>`).join('')}</div>`;
+                }
+
+                article.innerHTML = `
+                    <div class="article-headline">${escapeHtml(headline || 'Sem Título')}</div>
+                    <div class="article-byline">Publicado em ${note.date || new Date().toLocaleDateString('pt-BR')}</div>
+                    <div class="article-content">
+                        <p>${escapeHtml(body || content).replace(/\n/g, '</p><p>')}</p>
+                    </div>
+                    ${tagsHtml}
+                `;
+                container.appendChild(article);
+            });
+        }
+
+        function escapeHtml(text) {
+            const map = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'};
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Atualizar data
+        document.getElementById('currentDate').textContent = new Intl.DateTimeFormat('pt-BR', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        }).format(new Date()).toUpperCase();
+
+        // Atualizar jornal a cada 5 segundos
+        setInterval(() => {
+            if (document.getElementById('newspaper-page').classList.contains('active')) {
+                updateNewspaperView();
+            }
+        }, 5000);
+    </script>
 </body>
 </html>
