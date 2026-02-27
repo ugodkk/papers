@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Jornal de Notas Compartilhadas - Estilo Jornal Antigo">
+    <meta name="theme-color" content="#d4af37">
+    <title>Jornal de Notas Compartilhadas</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital@0;1&family=Playfair+Display:wght@700;900&family=EB+Garamond:wght@400;600&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: linear-gradient(135deg, #D4AF37 0%, #B8A130 50%, #8B7E1A 100%);
+            background-attachment: fixed;
+            font-family: 'EB Garamond', 'Georgia', serif;
+            color: #2c1810;
+            line-height: 1.7;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .newspaper-container {
+            background: linear-gradient(
+                to bottom,
+                #f5f1e8 0%,
+                #f0ebe0 50%,
+                #ebe5d9 100%
+            );
+            box-shadow: 
+                0 30px 60px rgba(0, 0, 0, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px 60px;
+            position: relative;
+            border: 8px solid #a68a4a;
+            overflow: hidden;
+        }
+
+        /* Efeito de papel envelhecido */
+        .newspaper-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 0, 0, 0.03) 2px,
+                    rgba(0, 0, 0, 0.03) 4px
+                ),
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 0, 0, 0.03) 2px,
+                    rgba(0, 0, 0, 0.03) 4px
+                );
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        .newspaper-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Cabeçalho do Jornal */
+        .newspaper-header {
+            text-align: center;
+            border-bottom: 6px double #2c1810;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .newspaper-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 4em;
+            font-weight: 900;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #1a0f05;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 5px;
+            line-height: 1;
+        }
+
+        .newspaper-subtitle {
+            font-family: 'Crimson Text', serif;
+            font-size: 1.2em;
+            font-style: italic;
+            color: #5c3a1f;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .newspaper-date {
+            font-size: 0.95em;
+            color: #6b4423;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-top: 2px solid #2c1810;
+            border-bottom: 2px solid #2c1810;
+            padding: 8px 0;
+            font-weight: 600;
+        }
+
+        /* Decoração */
+        .ornament {
+            text-align: center;
+            font-size: 1.5em;
+            color: #a68a4a;
+            margin: 15px 0;
+            opacity: 0.7;
+        }
+
+        /* Coluna de Notas */
+        .newspaper-columns {
+            column-count: 2;
+            column-gap: 30px;
+            column-rule: 2px solid #a68a4a;
+        }
+
+        .note-article {
+            break-inside: avoid;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #c4a97d;
+        }
+
+        .note-article:last-child {
+            border-bottom: none;
+        }
+
+        .article-headline {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #1a0f05;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            line-height: 1.2;
+        }
+
+        .article-byline {
+            font-size: 0.85em;
+            color: #6b4423;
+            font-style: italic;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .article-content {
+            font-size: 0.95em;
+            color: #2c1810;
+            line-height: 1.8;
+            text-align: justify;
+        }
+
+        .article-content p {
+            margin-bottom: 12px;
+            text-indent: 2em;
+        }
+
+        .article-content p:first-letter {
+            font-weight: 700;
+            font-size: 1.3em;
+        }
+
+        /* Tags como seções */
+        .article-tags {
+            margin-top: 10px;
+            font-size: 0.8em;
+            color: #6b4423;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .tag-badge {
+            display: inline-block;
+            background: #a68a4a;
+            color: #f5f1e8;
+            padding: 3px 8px;
+            margin-right: 5px;
+            border-radius: 2px;
+            font-weight: 600;
+        }
+
+        /* Rodapé */
+        .newspaper-footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 6px double #2c1810;
+            font-size: 0.9em;
+            color: #6b4423;
+        }
+
+        .footer-decoration {
+            color: #a68a4a;
+            font-size: 1.3em;
+            margin: 10px 0;
+            letter-spacing: 3px;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .newspaper-container {
+                padding: 30px 20px;
+                border-width: 4px;
+            }
+
+            .newspaper-title {
+                font-size: 2.5em;
+                letter-spacing: 1px;
+            }
+
+            .newspaper-subtitle {
+                font-size: 1em;
+            }
+
+            .newspaper-columns {
+                column-count: 1;
+                column-gap: 0;
+                column-rule: none;
+            }
+
+            .article-headline {
+                font-size: 1.4em;
+            }
+
+            .article-content {
+                font-size: 0.9em;
+            }
+        }
+
+        /* Estado vazio */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b4423;
+        }
+
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            opacity: 0.3;
+            margin-bottom: 20px;
+        }
+
+        .empty-state-text {
+            font-size: 1.2em;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        /* Botões */
+        .public-info {
+            background: rgba(166, 138, 74, 0.1);
+            border: 2px solid #a68a4a;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+            color: #5c3a1f;
+            text-align: center;
+        }
+
+        .public-info strong {
+            color: #2c1810;
+        }
+    </style>
+</head>
+<body>
+    <div class="newspaper-container">
+        <div class="newspaper-content">
+            <!-- Cabeçalho -->
+            <div class="newspaper-header">
+                <div class="newspaper-title">Jornal de Notas</div>
+                <div class="newspaper-subtitle">Compartilhadas com o Mundo</div>
+                <div class="ornament">✦ ✦ ✦</div>
+                <div class="newspaper-date" id="currentDate"></div>
+                <div class="public-info">
+                    <strong>Edição Pública</strong> - Todas as notas compartilhadas em um único lugar
+                </div>
+            </div>
+
+            <!-- Colunas de Notas -->
+            <div class="newspaper-columns" id="notesContainer">
+                <div class="empty-state">
+                    <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="20" y="20" width="60" height="60" rx="5"/>
+                        <line x1="30" y1="35" x2="70" y2="35"/>
+                        <line x1="30" y1="45" x2="70" y2="45"/>
+                        <line x1="30" y1="55" x2="70" y2="55"/>
+                        <line x1="30" y1="65" x2="55" y2="65"/>
+                    </svg>
+                    <div class="empty-state-text">Nenhuma nota compartilhada ainda</div>
+                    <p>As notas compartilhadas aparecerão aqui em formato de jornal</p>
+                </div>
+            </div>
+
+            <!-- Rodapé -->
+            <div class="newspaper-footer">
+                <div class="footer-decoration">✦ ✦ ✦</div>
+                <p>Publicado por Notas Pro - Compartilhamento Público</p>
+                <p style="margin-top: 10px; font-size: 0.85em;">
+                    <em>Este jornal digital é atualizado automaticamente conforme novas notas são compartilhadas</em>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Definir data atual
+        document.getElementById('currentDate').textContent = new Intl.DateTimeFormat('pt-BR', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        }).format(new Date()).toUpperCase();
+
+        // Carregar notas compartilhadas do localStorage
+        class PublicNewspaper {
+            constructor() {
+                this.container = document.getElementById('notesContainer');
+                this.loadSharedNotes();
+            }
+
+            loadSharedNotes() {
+                try {
+                    const allNotes = JSON.parse(localStorage.getItem('shared_notes') || '[]');
+                    
+                    if (allNotes.length === 0) {
+                        return; // Manter o empty state
+                    }
+
+                    this.container.innerHTML = '';
+                    
+                    allNotes.forEach((note, index) => {
+                        const article = this.createArticle(note, index);
+                        this.container.appendChild(article);
+                    });
+
+                } catch (error) {
+                    console.error('Erro ao carregar notas:', error);
+                }
+            }
+
+            createArticle(note, index) {
+                const article = document.createElement('div');
+                article.className = 'note-article';
+                
+                const content = note.content || note.body || '';
+                const lines = content.split('\n').filter(l => l.trim());
+                const headline = lines[0]?.substring(0, 80) + (lines[0]?.length > 80 ? '...' : '');
+                const body = lines.slice(1).join('\n').substring(0, 500) + 
+                           (content.length > 500 ? '...' : '');
+
+                let tagsHtml = '';
+                if (note.tags && note.tags.length > 0) {
+                    tagsHtml = `
+                        <div class="article-tags">
+                            ${note.tags.map(tag => `<span class="tag-badge">${tag}</span>`).join('')}
+                        </div>
+                    `;
+                }
+
+                const dateStr = note.date || new Intl.DateTimeFormat('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                }).format(new Date());
+
+                article.innerHTML = `
+                    <div class="article-headline">${this.escapeHtml(headline || 'Sem Título')}</div>
+                    <div class="article-byline">Publicado em ${dateStr}</div>
+                    <div class="article-content">
+                        <p>${this.escapeHtml(body || content).replace(/\n/g, '</p><p>')}</p>
+                    </div>
+                    ${tagsHtml}
+                `;
+
+                return article;
+            }
+
+            escapeHtml(text) {
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return text.replace(/[&<>"']/g, m => map[m]);
+            }
+        }
+
+        // Inicializar quando a página carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            new PublicNewspaper();
+        });
+
+        // Recarregar a cada 5 segundos para refletir novas notas
+        setInterval(() => {
+            new PublicNewspaper();
+        }, 5000);
+    </script>
+</body>
+</html>

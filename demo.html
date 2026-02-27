@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📰 Pre-visualizar Jornal com Exemplos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 60px auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        
+        .demo-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #d4af37;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .instructions {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .instructions h2 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #d4af37;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .btn-primary:hover {
+            background: #c49d2f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(212, 175, 55, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #666;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #555;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .status {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 6px;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+        
+        .link-box {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+            border-left: 4px solid #d4af37;
+        }
+        
+        .link-box p {
+            margin: 0 0 10px 0;
+            color: #666;
+        }
+        
+        .link-box input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+        
+        .note-preview {
+            background: #fff9e6;
+            border: 2px solid #d4af37;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 6px;
+            font-family: Georgia, serif;
+            color: #333;
+        }
+        
+        .note-preview h3 {
+            color: #8b4513;
+            margin-top: 0;
+        }
+        
+        .note-preview p {
+            line-height: 1.6;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1>📰 Demonstrativo - Jornal de Notas Públicas</h1>
+        
+        <div class="instructions">
+            <h2>🎯 Como Usar Este Demo?</h2>
+            <p>Este página permite você pré-visualizar como o jornal funcionará com dados de exemplo.</p>
+            <ol>
+                <li><strong>Carregar Exemplos:</strong> Clique em "Carregar Dados de Exemplo" para popular o jornal</li>
+                <li><strong>Ver Jornal:</strong> Clique em "Abrir Jornal Público" para ver como fica</li>
+                <li><strong>Limpar Dados:</strong> Use "Limpar Dados" para remover os exemplos</li>
+                <li><strong>Adicionar Manual:</strong> Acesse o app principal (index.html) para adicionar suas próprias notas</li>
+            </ol>
+        </div>
+        
+        <div class="button-group">
+            <button class="btn-primary" onclick="loadExamples()">
+                📰 Carregar Dados de Exemplo
+            </button>
+            <button class="btn-secondary" onclick="openPublicPage()">
+                👁️ Abrir Jornal Público
+            </button>
+            <button class="btn-danger" onclick="clearData()">
+                🗑️ Limpar Todos os Dados
+            </button>
+            <button class="btn-secondary" onclick="showStats()">
+                📊 Ver Estatísticas
+            </button>
+        </div>
+        
+        <div id="status" class="status"></div>
+        
+        <div class="link-box">
+            <p><strong>🔗 URL da Página Pública:</strong></p>
+            <input type="text" id="publicLink" readonly value="public.html">
+            <button class="btn-primary" onclick="copyLink()">Copiar Link</button>
+        </div>
+        
+        <div id="stats-container"></div>
+        
+        <div style="margin-top: 30px; padding: 20px; background: #f9f9f9; border-radius: 6px;">
+            <h2>💡 Exemplos de Notas Que Serão Carregadas:</h2>
+            
+            <div class="note-preview">
+                <h3>Os 5 Hábitos de Pessoas Produtivas</h3>
+                <p>Estudos recentes mostram que pessoas altamente produtivas compartilham 5 hábitos em comum. Primeiro, elas começam o dia cedo, geralmente entre 5 e 6 da manhã.</p>
+                <p><strong>Categorias:</strong> Produtividade, Desenvolvimento Pessoal</p>
+            </div>
+            
+            <div class="note-preview">
+                <h3>Tecnologia: O Futuro é Agora</h3>
+                <p>A inteligência artificial, machine learning e computação quântica estão revolucionando a forma como trabalhamos e vivemos. As empresas que abraçarem essas tecnologias terão vantagem competitiva.</p>
+                <p><strong>Categorias:</strong> Tecnologia, Inovação</p>
+            </div>
+            
+            <div class="note-preview">
+                <h3>Bem-estar e Saúde Mental</h3>
+                <p>A saúde mental é tão importante quanto a saúde física. Meditar por apenas 10 minutos por dia pode reduzir significativamente níveis de estresse e ansiedade.</p>
+                <p><strong>Categorias:</strong> Bem-estar, Saúde</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const exampleNotes = [
+            {
+                id: 1000001,
+                title: "Os 5 Hábitos de Pessoas Produtivas",
+                content: "Estudos recentes mostram que pessoas altamente produtivas compartilham 5 hábitos em comum.\n\nPrimeiro, elas começam o dia cedo, geralmente entre 5 e 6 da manhã. Isso permitir que elas tenham tempo para planejar o dia sem distrações.\n\nSegundo, elas definem metas claras e mensuráveis. Ter objetivos específicos ajuda a manter o foco e a motivação.\n\nTerceiro, elas praticam a técnica Pomodoro ou similar, trabalhando em blocos de tempo focado.\n\nQuarto, elas eliminam distrações - desligam notificações, fecham redes sociais e se isolam.\n\nQuinto, elas reveem seu progresso no final do dia e planejam o dia seguinte.",
+                tags: ["Produtividade", "Desenvolvimento Pessoal"],
+                date: new Date().toLocaleDateString('pt-BR'),
+                sharedAt: new Date().toISOString()
+            },
+            {
+                id: 1000002,
+                title: "Tecnologia: O Futuro é Agora",
+                content: "A inteligência artificial, machine learning e computação quântica estão revolucionando a forma como trabalhamos e vivemos. As empresas que abraçarem essas tecnologias terão vantagem competitiva.\n\nAs tecnologias emergentes como blockchain, Internet das Coisas (IoT) e realidade aumentada estão criando novas oportunidades de negócios e mudando a forma como interagimos com o mundo.\n\nMas com essa transformação vem também a necessidade de educação contínua. Profissionais precisam se atualizar constantemente para não ficarem para trás.",
+                tags: ["Tecnologia", "Inovação"],
+                date: new Date().toLocaleDateString('pt-BR'),
+                sharedAt: new Date().toISOString()
+            },
+            {
+                id: 1000003,
+                title: "Bem-estar e Saúde Mental",
+                content: "A saúde mental é tão importante quanto a saúde física. Muitas pessoas negligenciam este aspecto crucial da vida.\n\nMeditar por apenas 10 minutos por dia pode reduzir significativamente níveis de estresse e ansiedade. Existem aplicativos gratuitos que guiam meditações para iniciantes.\n\nOutra técnica importante é manter uma rotina regular, incluindo sono suficiente (7-9 horas), exercício físico e tempo com amigos e família.\n\nProblemas de saúde mental não são fraqueza - são condições reais que afetam muitas pessoas. Buscar ajuda profissional é sempre uma opção válida e importante.",
+                tags: ["Bem-estar", "Saúde"],
+                date: new Date().toLocaleDateString('pt-BR'),
+                sharedAt: new Date().toISOString()
+            },
+            {
+                id: 1000004,
+                title: "Dicas de Escrita Criativa",
+                content: "Escrever é uma arte que pode ser desenvolvida e aperfeiçoada com prática constante.\n\n1. Leia muito - quanto mais você lê, melhor sua escrita se torna. Leia diversos gêneros e autores.\n\n2. Escreva regularmente - mantenha um diário, blog ou simplesmente escreva por diversão.\n\n3. Edite seu trabalho - nunca considere seu primeiro rascunho como final. Revisão é essencial.\n\n4. Tenha voz própria - não tente copiar outros autores. Sua perspectiva única é seu maior ativo.\n\n5. Conecte-se com outros escritores - participe de comunidades de escrita, grupos de discussão e workshops.",
+                tags: ["Escrita", "Criatividade"],
+                date: new Date().toLocaleDateString('pt-BR'),
+                sharedAt: new Date().toISOString()
+            }
+        ];
+
+        function showStatus(message, type = 'success') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = 'status ' + type;
+            setTimeout(() => {
+                statusDiv.className = 'status';
+            }, 5000);
+        }
+
+        function loadExamples() {
+            try {
+                localStorage.setItem('shared_notes', JSON.stringify(exampleNotes));
+                showStatus('✅ Dados de exemplo carregados com sucesso! Clique em "Abrir Jornal Público" para visualizar.', 'success');
+            } catch (error) {
+                showStatus('❌ Erro ao carregar exemplos: ' + error.message, 'error');
+            }
+        }
+
+        function openPublicPage() {
+            window.open('public.html', '_blank');
+        }
+
+        function clearData() {
+            if (confirm('Tem certeza que deseja limpar todos os dados do jornal?')) {
+                localStorage.setItem('shared_notes', '[]');
+                showStatus('🗑️ Todos os dados foram removidos!', 'info');
+            }
+        }
+
+        function showStats() {
+            try {
+                const notes = JSON.parse(localStorage.getItem('shared_notes') || '[]');
+                const stats = {
+                    total: notes.length,
+                    chars: notes.reduce((sum, n) => sum + (n.content?.length || 0), 0),
+                    tags: {}
+                };
+                
+                notes.forEach(note => {
+                    if (note.tags) {
+                        note.tags.forEach(tag => {
+                            stats.tags[tag] = (stats.tags[tag] || 0) + 1;
+                        });
+                    }
+                });
+
+                let html = `<div class="link-box" style="border-left-color: #4CAF50;">
+                    <h3 style="margin-top: 0; color: #2e7d32;">📊 Estatísticas do Jornal</h3>
+                    <p><strong>Total de Notas:</strong> ${stats.total}</p>
+                    <p><strong>Total de Caracteres:</strong> ${stats.chars.toLocaleString('pt-BR')}</p>
+                    <p><strong>Categorias:</strong> ${Object.keys(stats.tags).length}</p>`;
+                
+                if (Object.keys(stats.tags).length > 0) {
+                    html += '<p><strong>Detalhes por Categoria:</strong></p><ul>';
+                    Object.entries(stats.tags).forEach(([tag, count]) => {
+                        html += `<li>${tag}: ${count} nota(s)</li>`;
+                    });
+                    html += '</ul>';
+                }
+                
+                html += '</div>';
+                document.getElementById('stats-container').innerHTML = html;
+                showStatus('📊 Estatísticas atualizadas!', 'info');
+            } catch (error) {
+                showStatus('❌ Erro ao obter estatísticas: ' + error.message, 'error');
+            }
+        }
+
+        function copyLink() {
+            const input = document.getElementById('publicLink');
+            input.select();
+            document.execCommand('copy');
+            showStatus('🔗 Link copiado para a área de transferência!', 'success');
+        }
+
+        // Carregar link público na página
+        document.getElementById('publicLink').value = window.location.origin + window.location.pathname.replace('demo.html', 'public.html');
+
+        // Mostrar status inicial
+        window.addEventListener('load', () => {
+            const notes = JSON.parse(localStorage.getItem('shared_notes') || '[]');
+            if (notes.length > 0) {
+                showStatus(`ℹ️ O jornal já contém ${notes.length} nota(s). Você pode visualizá-las em "public.html".`, 'info');
+            }
+        });
+    </script>
+</body>
+</html>

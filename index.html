@@ -146,6 +146,7 @@
                             <button id="save-btn" class="btn btn-primary">Salvar</button>
                             <button id="copy-btn" class="btn btn-secondary">Copiar</button>
                             <button id="export-btn" class="btn btn-secondary">Exportar</button>
+                            <button id="share-newspaper-btn" class="btn btn-secondary">📰 Compartilhar</button>
                             <button id="delete-btn" class="btn btn-tertiary">Deletar</button>
                         </div>
                     </div>
@@ -283,10 +284,94 @@
     <div id="notification" class="notification" role="status" aria-live="polite"></div>
     <div id="save-indicator" class="save-indicator"></div>
 
+    <!-- SHARE MODAL -->
+    <div id="share-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📰 Compartilhar como Jornal Público</h2>
+                <button class="btn-icon modal-close">✕</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="share-info">
+                    <p><strong>Transforme suas notas em um jornal público!</strong></p>
+                    <p>Suas notas aparecerão em um elegante formato de jornal antigo, compartilhado com o mundo.</p>
+                </div>
+
+                <div class="share-preview">
+                    <h3>📰 Visualização do Jornal</h3>
+                    <div class="mini-newspaper">
+                        <div style="font-family: 'Playfair Display', serif; font-size: 1.5em; font-weight: 900; text-align: center; margin-bottom: 10px;">Jornal de Notas</div>
+                        <div style="text-align: center; font-style: italic; font-size: 0.9em; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 10px;">Compartilhadas com o Mundo</div>
+                        <div style="font-size: 1.1em; font-weight: 700; margin-bottom: 5px;" id="preview-title">Título da Sua Nota</div>
+                        <div style="font-size: 0.85em; color: #666; margin-bottom: 10px; font-style: italic;">Publicado em <span id="preview-date"></span></div>
+                        <div style="font-size: 0.95em; line-height: 1.6; color: #333;">
+                            <p id="preview-content">Seu conteúdo aparecerá aqui em um elegante desig de jornal antigo...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="share-options">
+                    <h3>📋 Opções</h3>
+                    
+                    <div class="option">
+                        <input type="checkbox" id="include-tags" checked>
+                        <label for="include-tags">
+                            <strong>Incluir tags</strong>
+                            <span class="option-desc">As tags aparecerão como categorias no jornal</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="link-section">
+                    <h3>🔗 Link Público</h3>
+                    <div class="link-copy">
+                        <input type="text" id="public-link" readonly placeholder="Link será atualizado ao compartilhar" style="
+                            flex: 1;
+                            padding: 10px 12px;
+                            background: #0f0f0f;
+                            border: 1px solid #3a3a3a;
+                            color: #e8e8e8;
+                            border-radius: 6px;
+                            font-family: monospace;
+                            font-size: 0.9rem;
+                        ">
+                        <button class="btn btn-secondary" id="copy-link-btn">Copiar Link</button>
+                    </div>
+                </div>
+
+                <div class="stats-section">
+                    <h3>📊 Status do Jornal</h3>
+                    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                        <div class="stat" style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; padding: 15px; border-radius: 6px; text-align: center;">
+                            <span class="stat-value" id="stat-notes" style="display: block; font-size: 1.75rem; font-weight: 700; color: #3b82f6; margin-bottom: 5px;">0</span>
+                            <span class="stat-label" style="display: block; font-size: 0.85rem; color: #a0a0a0;">Notas Compartilhadas</span>
+                        </div>
+                        <div class="stat" style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; padding: 15px; border-radius: 6px; text-align: center;">
+                            <span class="stat-value" id="stat-chars" style="display: block; font-size: 1.75rem; font-weight: 700; color: #3b82f6; margin-bottom: 5px;">0</span>
+                            <span class="stat-label" style="display: block; font-size: 0.85rem; color: #a0a0a0;">Caracteres</span>
+                        </div>
+                        <div class="stat" style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; padding: 15px; border-radius: 6px; text-align: center;">
+                            <span class="stat-value" id="stat-tags" style="display: block; font-size: 1.75rem; font-weight: 700; color: #3b82f6; margin-bottom: 5px;">0</span>
+                            <span class="stat-label" style="display: block; font-size: 0.85rem; color: #a0a0a0;">Categorias</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary modal-close">Cancelar</button>
+                <button class="btn btn-primary" id="confirm-share">Compartilhar Agora</button>
+            </div>
+        </div>
+    </div>
+
     <!-- SCRIPTS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dexie/3.2.5/dexie.min.js"></script>
     <script src="db.js"></script>
     <script src="components.js"></script>
+    <script src="newspaper.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

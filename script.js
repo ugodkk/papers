@@ -285,6 +285,98 @@ window.addEventListener('beforeunload', async (e) => {
 });
 
 // ============================================================================
+// COMPARTILHAMENTO EM JORNAL PÚBLICO
+// ============================================================================
+
+function setupShareModal() {
+  const shareBtn = document.getElementById('share-newspaper-btn');
+  const shareModal = document.getElementById('share-modal');
+  const confirmShareBtn = document.getElementById('confirm-share');
+  const copyLinkBtn = document.getElementById('copy-link-btn');
+  const modalClose = shareModal.querySelector('.modal-close');
+
+  // Abrir modal
+  shareBtn.addEventListener('click', () => {
+    const title = document.getElementById('note-title').value || 'Nota Sem Título';
+    const content = document.getElementById('editor').innerText || '';
+    
+    // Atualizar preview
+    document.getElementById('preview-title').textContent = title.substring(0, 60);
+    document.getElementById('preview-date').textContent = new Date().toLocaleDateString('pt-BR');
+    document.getElementById('preview-content').innerHTML = content.substring(0, 150).replace(/\n/g, '<br>') + '...';
+    
+    // Atualizar link público
+    const publicLink = newspaper.getPublicLink();
+    document.getElementById('public-link').value = publicLink;
+    
+    // Atualizar estatísticas
+    const stats = newspaper.getStats();
+    document.getElementById('stat-notes').textContent = stats.totalNotes;
+    document.getElementById('stat-chars').textContent = stats.totalCharacters.toLocaleString('pt-BR');
+    document.getElementById('stat-tags').textContent = Object.keys(stats.tags).length;
+    
+    shareModal.classList.remove('hidden');
+    UIComponents.disableBodyScroll();
+  });
+
+  // Fechar modal
+  modalClose.addEventListener('click', () => {
+    shareModal.classList.add('hidden');
+    UIComponents.enableBodyScroll();
+  });
+
+  // Copiar link
+  copyLinkBtn.addEventListener('click', () => {
+    const linkInput = document.getElementById('public-link');
+    linkInput.select();
+    document.execCommand('copy');
+    UIComponents.showNotification('✓ Link copiado para a área de transferência!', 'success');
+  });
+
+  // Compartilhar agora
+  confirmShareBtn.addEventListener('click', () => {
+    const title = document.getElementById('note-title').value || 'Nota Sem Título';
+    const content = document.getElementById('editor').innerText || '';
+    const includeTags = document.getElementById('include-tags').checked;
+
+    const currentNote = {
+      id: Date.now(),
+      title: title,
+      body: content,
+      tags: includeTags ? ['Compartilhada'] : [],
+      date: new Date().toLocaleDateString('pt-BR')
+    };
+
+    const result = newspaper.shareNote(currentNote);
+
+    if (result.success) {
+      UIComponents.showNotification(result.message, 'success');
+      shareModal.classList.add('hidden');
+      UIComponents.enableBodyScroll();
+      
+      // Atualizar estatísticas
+      setTimeout(() => {
+        const stats = newspaper.getStats();
+        document.getElementById('stat-notes').textContent = stats.totalNotes;
+        document.getElementById('stat-chars').textContent = stats.totalCharacters.toLocaleString('pt-BR');
+        document.getElementById('stat-tags').textContent = Object.keys(stats.tags).length;
+      }, 100);
+    } else {
+      UIComponents.showNotification('✗ ' + result.message, 'error');
+    }
+  });
+}
+
+// Inicializar modal de compartilhamento
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    if (document.getElementById('share-newspaper-btn')) {
+      setupShareModal();
+    }
+  }, 1000);
+});
+
+// ============================================================================
 // DETECTAR ONLINE/OFFLINE
 // ============================================================================
 
@@ -303,3 +395,4 @@ window.addEventListener('offline', () => {
 console.log('%c📝 Notas Pro v1.0', 'font-size: 20px; font-weight: bold; color: #3b82f6;');
 console.log('%cPlataforma de notas com 500k+ caracteres, IndexedDB, e recursos modernos', 'color: #a0a0a0;');
 console.log('%cDicas: Ctrl+S (Salvar), Ctrl+N (Nova), Ctrl+K (Buscar)', 'color: #10b981;');
+console.log('%c📰 Novo: Compartilhe suas notas como um jornal público!', 'color: #d4af37; font-weight: bold;');
